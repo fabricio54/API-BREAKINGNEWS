@@ -12,17 +12,23 @@ import express from 'express';
 const app = express();
 import connectDatabase from './src/database/db.js';
 import userRoute from './src/routes/user.router.js';
-const port = 3000;
+import authRoute from './src/routes/auth.route.js';
+
+// importando o modulo dotenv para variáveis globais
+import dotenv from "dotenv";
+// executando o dotenv config
+dotenv.config();
+
+
+const port = process.env.PORT || 3000;
 
 // conectando o mongoDb atlas conectado
 connectDatabase();
-
 // expecificando que a aplicação vai utilizar o json
-
 app.use(express.json());
-
 // função que faz de uma rota
 app.use("/user", userRoute);
+app.use("/auth", authRoute);
 
 // descrição do método http get abaixo, o primeiro parâmetro e a rota barra e uma função de callback que tem dois parâmetros e que retorna um hello word
 
@@ -51,4 +57,6 @@ app.use("/user", userRoute);
 
 // importando uma rota para esse arquivo
 // começando a deixar as coisas mais elegantes
-app.listen(3000, () => console.log(`Servidor rodando na porta ${port}`));
+
+// utizando o env para configurar um porta padrão para quando subir a aplicação no servidor
+app.listen(port, () => console.log(`Servidor rodando na porta ${port}`));

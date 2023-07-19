@@ -5,7 +5,7 @@ import mongoose from 'mongoose';
 const connectDatabase = () => {
     console.log("wait connecting to the database");
 
-    mongoose.connect("mongodb+srv://fabricio:fabricio@cluster0.xv0badm.mongodb.net/?retryWrites=true&w=majority", {useNewUrlParser: true, useUnifiedTopology: true}).then(() => console.log("Mongo Atlas Connected")).catch((error) => console.log(error));
+    mongoose.connect(process.env.MONGODB_URI, {useNewUrlParser: true, useUnifiedTopology: true}).then(() => console.log("Mongo Atlas Connected")).catch((error) => console.log(error));
 }
 
 export default connectDatabase;
