@@ -13,6 +13,7 @@ const app = express();
 import connectDatabase from './src/database/db.js';
 import userRoute from './src/routes/user.router.js';
 import authRoute from './src/routes/auth.route.js';
+import newsRoute from './src/routes/user.router.js';
 
 // importando o modulo dotenv para variáveis globais
 import dotenv from "dotenv";
@@ -29,6 +30,7 @@ app.use(express.json());
 // função que faz de uma rota
 app.use("/user", userRoute);
 app.use("/auth", authRoute);
+app.use("/news", newsRoute);
 
 // descrição do método http get abaixo, o primeiro parâmetro e a rota barra e uma função de callback que tem dois parâmetros e que retorna um hello word
 
