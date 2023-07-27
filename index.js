@@ -13,7 +13,7 @@ const app = express();
 import connectDatabase from './src/database/db.js';
 import userRoute from './src/routes/user.router.js';
 import authRoute from './src/routes/auth.route.js';
-import newsRoute from './src/routes/user.router.js';
+import newsRoute from './src/routes/news.route.js';
 
 // importando o modulo dotenv para variáveis globais
 import dotenv from "dotenv";
