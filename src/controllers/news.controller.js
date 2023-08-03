@@ -1,5 +1,5 @@
 // importando o modulo services
-import { createService, findAllService, countNews, topNewsService, findByIdService, searchByTitleService, byUserService } from '../services/news.services.js';
+import { createService, findAllService, countNews, topNewsService, findByIdService, searchByTitleService, byUserService, updateService } from '../services/news.services.js';
 
 
 
@@ -197,6 +197,37 @@ export const byUser = async (req, res) => {
                 userAvatar: item.user.avatar
             }]),
         })
+    } catch (error) {
+        res.status(500).send({ message: error.message });
+    }
+}
+
+export const update = async (req, res) => {
+    try {
+        // pegando os dados para atualizar
+        const { title, text, banner } = req.body;
+        // pegando o id informado nos params
+        const { id } = req.params;
+
+        if(!title && !banner && !text){
+            res.status(400).send({message: "Submit at least one field to update the post"});
+        }
+        // pegando o news pelo id
+        const news = await findByIdService(id);
+
+        // news.user pegando o id que criou aquela news e comparando com o que está logado
+        if(news.user._id != req.userId) {
+            return res.status(400).send({
+                message: "You didn't update this post"
+            })
+        }
+
+        // atualizando a news
+        await updateService(id, title, text, banner);
+
+        // retornando uma messagem de sucesso após atualização
+        return res.send({ message: "Post successfully updated!"});
+
     } catch (error) {
         res.status(500).send({ message: error.message });
     }

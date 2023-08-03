@@ -23,3 +23,6 @@ export const searchByTitleService = (title) => News.find({
 export const byUserService = (id) => News.find({ user: id })
     .sort({ _id: -1 })
     .populate("user");
+
+// a estrutura abaixo descreve-se assim: procure (que) e atualiza (o que) e passando um terceiro parâmetro que é opcional que é o rawResult: escrever o resultado em tela
+export const updateService = (id, title, text, banner) => News.findOneAndUpdate({_id: id}, {title, text, banner}, {rawResult: true});
