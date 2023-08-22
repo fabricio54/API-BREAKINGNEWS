@@ -1,62 +1,32 @@
-// importando o dotenv
-import dotenv from "dotenv";
-// importando o jwt
-import jwt from 'jsonwebtoken';
-// importando o modullo de service
-import userService from "../services/user.service.js";
+import "dotenv/config";
+import jwt from "jsonwebtoken";
+import userRepositories from "../repositories/user.repositories.js";
 
-// configurando-o
-dotenv.config();
+function authMiddleware(req, res, next) {
+  const authHeader = req.headers.authorization;
+  if (!authHeader)
+    return res.status(401).send({ message: "The token was not informed!" });
 
-export const authMiddleware = (req, res, next) => {
-    try {
-        // pegando o authorization do headers
-        const { authorization } = req.headers;
-        // verificando se o usuário está autorizado entrar. se não retorna o status http 401 de não autorizado 
-        if (!authorization) {
-            return res.send(401);
-        }
-        // agora vamos desmembrar o autorization em partes com a função split() do javascript
-        const parts = authorization.split(" ");
+  const parts = authHeader.split(" "); /* ["Bearer", "asdasdasdadsadasd"] */
+  if (parts.length !== 2)
+    return res.status(401).send({ message: "Invalid token!" });
 
-        // verificando se os parts tem o tamanho 2
-        if (parts.length !== 2) {
-            res.send(401);
-        }
+  const [scheme, token] = parts;
 
-        // desmembrando o array criado com as strings
-        const [schema, token] = parts;
+  if (!/^Bearer$/i.test(scheme))
+    return res.status(401).send({ message: "Malformatted Token!" });
 
-        // verificando o schema
-        if (schema !== "Bearer") {
-            return res.send(401);
-        }
+  jwt.verify(token, process.env.SECRET, async (err, decoded) => {
+    if (err) return res.status(401).send({ message: "Invalid token!" });
 
-        // validando o token
+    const user = await userRepositories.findByIdUserRepository(decoded.id);
+    if (!user || !user.id)
+      return res.status(401).send({ message: "Invalid token!" });
 
-        // função do jwt que vai validar o token. essa função recebe três parâmetros: token, secrety variavel e uma função de callback que recebe o erro e um decoded 
-        jwt.verify(token, process.env.SECRET_JWT, async(error, decoded) => {
-            if (error) {
-                return res.status(401).send({ message: "Token invalid" });
-            }
-            // procurando se o id é válido
-            const user = await userService.findById(decoded.id)
+    req.userId = user.id;
 
-            // verificando se o usuário existe
-            if (!user || !user.id) {
-                return res.status(401).send({ message: "Invalid token" })
-            }
-            // criando constantes para passar para a próxima função a de id usuário
-            req.userId = user.id;
-
-            // passando para a próxima etapa do código
-            return next();
-        })
-        
-        
-    } catch (error) {
-        res.status(500).send({ message: error.message });
-    }
-
+    return next();
+  });
 }
 
+export default authMiddleware;

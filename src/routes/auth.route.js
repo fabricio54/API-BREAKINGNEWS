@@ -1,11 +1,9 @@
-// rota de autenticação
-// novo modo para importar router de express (maneira mais elegante)
+import authController from "../controllers/auth.controller.js";
 
-import { Router } from 'express';
-const router = Router();
+import { Router } from "express";
 
-import { login } from '../controllers/auth.controller.js';
+const authRouter = Router();
 
-router.post("/", login);
+authRouter.post("/login", authController.loginController);
 
-export default router;
+export default authRouter;

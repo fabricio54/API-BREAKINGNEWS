@@ -1,10 +1,24 @@
-import User from '../models/User.js';
-import jwt from 'jsonwebtoken';
+import jwt from "jsonwebtoken";
+import bcrypt from "bcrypt";
+import "dotenv/config";
+import userRepositories from "../repositories/user.repositories.js";
 
-// como o campo password foi configurado para não ser selecionado o fazemos quando chamamos a função que recebe um email e retorna o usuario e o campo que definimos que não configurado
-const loginService = (email) => User.findOne({email: email}).select("+password");
+function generateToken(id) {
+  return jwt.sign({ id: id }, process.env.SECRET, { expiresIn: 86400 });
+}
 
-// acionando a função sign do jwt temos que passar 3 parâmetros: payload (dado que queremos criptografar e adicionar a chave json), um texto criptografado no gerador de hash md5, e um objeto que tem o tempo que essa chave expira
-const generateToken = (id) => jwt.sign({id: id},process.env.SECRET_JWT, {expiresIn: 56400});
+const loginService = async ({ email, password }) => {
+  const user = await userRepositories.findByEmailUserRepository(email);
 
-export {loginService, generateToken } ;
+  if (!user) throw new Error("Wrong password or username");
+
+  const isPasswordValid = await bcrypt.compare(password, user.password);
+
+  if (!isPasswordValid) throw new Error("Invalid password");
+
+  const token = generateToken(user.id);
+
+  return token;
+};
+
+export default { loginService, generateToken };

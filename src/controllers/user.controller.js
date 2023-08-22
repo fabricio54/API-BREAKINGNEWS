@@ -1,101 +1,65 @@
-// importantdo o serviço de usuario
-import userService from '../services/user.service.js';
+import userService from "../services/user.service.js";
 
-// observação: como esse servidor não faz parte deste temos que acessar primeiro ele. fazemos isso com a palavra reservada async de assincrono esta externo ao app
+async function createUserController(req, res) {
+  const { name, username, email, password, avatar, background } = req.body;
 
-const create = async (req, res) => {
-    // utilizando try e catch: utilizado caso ache um erro de servidor e temos que mostra-lo ao usuário
-    try {
-        const { name, username, email, password, avatar, background } = req.body; // isso aqui é um objeto que tem campos e temos que desmembrar e tambem validar
+  try {
+    const token = await userService.createUserService({
+      name,
+      username,
+      email,
+      password,
+      avatar,
+      background,
+    });
+    res.status(201).send(token);
+  } catch (e) {
+    return res.status(400).send(e.message);
+  }
+}
 
-        // validade dados
-        if (!name || !username || !email || !password || !avatar || !background) {
-            // com o json
-            /*
-            res.json("Submit all fields for registration")
-            */
-            // com o message mais elegante
-            // para informar de onde partiu o erro e tem uma lista variada. mais especifimente e um erro do clinte por que não preencheu todos os campos então antes do sendo colocamos o status e o número do erro informado
-            res.status(400).send({ message: "Submit all fields for registration" });
-        }
+async function findAllUserController(req, res) {
+  try {
+    const users = await userService.findAllUserService();
+    return res.send(users);
+  } catch (e) {
+    return res.status(404).send(e.message);
+  }
+}
 
-        // criando uma constante que recebe userService.create
+async function findUserByIdController(req, res) {
+  try {
+    const user = await userService.findUserByIdService(
+      req.params.id,
+      req.userId
+    );
+    return res.send(user);
+  } catch (e) {
+    return res.status(400).send(e.message);
+  }
+}
 
-        // temos que usar o await porque essa função e externa ao servidor. primeiramente utilizando o asycn em cima (espera)
-        const user = await userService.create(req.body);
+async function updateUserController(req, res) {
+  try {
+    const { name, username, email, password, avatar, background } = req.body;
+    const { id: userId } = req.params;
+    const userIdLogged = req.userId;
 
-        // verificando a constante tem os valores 
-        if (!user) {
-            return res.status(400).send({ message: "Error creating User" });
-        }
+    const response = await userService.updateUserService(
+      { name, username, email, password, avatar, background },
+      userId,
+      userIdLogged
+    );
 
-        res.status(201).send({
-            message: "User created succefully",
+    return res.send(response);
+  } catch (e) {
+    res.status(400).send(e.message);
+  }
+}
 
-            user: {
-                id: user._id, // cria um id automaticamente
-                name,
-                username,
-                email,
-                avatar,
-                background,
-            },
-        });
-    } catch (err) {
-        res.status(500).send({ message: err.message });
-    }
+export default {
+  createUserController,
+  findAllUserController,
+  findUserByIdController,
+  updateUserController,
 };
-
-const findAll = async (req, res) => {
-    try {
-        const users = await userService.findAll();
-
-        if (users.length === 0) {
-            return res.status(400).send({ message: "There are no registered users" })
-        }
-
-        res.send(users)
-    } catch (err) {
-        res.status(500).send({ message: err.message })
-    }
-}
-
-const findById = async (req, res) => {
-    try {
-        const user = req.user;
-        res.send(user);
-    } catch (err) {
-        res.status(500).send({ message: err.message })
-    }
-}
-
-const update = async (req, res) => {
-
-    try {
-        const { name, username, email, password, avatar, background } = req.body;
-
-        if (!name && !username && !email && !password && !avatar && !background) {
-
-            res.status(400).send({ message: "Submit at least one field for update" });
-        }
-
-        const { id, user } = req;
-
-        await userService.updateService(
-            id,
-            name,
-            username,
-            email,
-            password,
-            avatar,
-            background
-        );
-
-        res.send({ message: "User successfully updated" })
-    } catch (err) {
-        res.status(500).send({ message: err.message })
-    }
-
-}
-// exportando a função para outras modulos terem acesso (module de rotas)
-export default{ create, findAll, findById, update };
